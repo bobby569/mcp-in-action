@@ -10,6 +10,7 @@
 Author: FlyAIBox
 Date: 2025.05.04
 """
+
 import os
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -18,9 +19,7 @@ import logging
 
 from langchain_mcp_adapters.tools import load_mcp_tools
 from langgraph.prebuilt import create_react_agent
-from langgraph.prebuilt import chat_agent_executor
-from langchain_core.messages import SystemMessage, HumanMessage
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import SystemMessage
 
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
@@ -40,18 +39,14 @@ if not os.getenv("QWEATHER_API_BASE"):
 
 # 配置 ChatOpenAI
 model = ChatOpenAI(
-    api_key="XXX",
-    base_url="https://api.deepseek.com",
-    model="deepseek-chat",
-    temperature=0
+    api_key="XXX", base_url="https://api.deepseek.com", model="deepseek-chat", temperature=0
 )
+
 
 async def main():
     # 确定服务器路径
     server_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        "server",
-        "weather_server.py"
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "server", "weather_server.py"
     )
 
     # 检查服务器文件是否存在
@@ -68,7 +63,7 @@ async def main():
         logger.info("正在启动客户端连接...")
         async with stdio_client(server_params) as (read, write):
             logger.info("成功建立客户端连接")
-            
+
             async with ClientSession(read, write) as session:
                 # Initialize the connection
                 logger.info("正在初始化会话...")
@@ -81,7 +76,8 @@ async def main():
                 logger.info(f"成功加载工具: {[tool.name for tool in tools]}")
 
                 # 创建提示模板
-                prompt = SystemMessage(content=""""You are a helpful assistant specializing in weather information.\n
+                prompt = SystemMessage(
+                    content=""""You are a helpful assistant specializing in weather information.\n
                                     You have access to the MCP Weather Server tool with the following functions:\n
                                     - get_weather_warning(city_id=None, latitude=None, longitude=None): Retrieves weather disaster warnings for a specified city ID or coordinates.\n
                                     - get_daily_forecast(city_id=None, latitude=None, longitude=None): Retrieves the multi-day weather forecast for a specified city ID or coordinates.\n
@@ -103,41 +99,39 @@ async def main():
                                     5.  **Tool Usage Details**:\n
                                         * When using the tools, retain the full context of the user's original question.\n
                                         * Unless explicitly requested by the user, do not insert specific times of day (e.g., \3 PM\) into the search query or your response.\n
-                                        * When city information is needed, if the user provides a city name (e.g., \Beijing\), use the corresponding `city_id` (e.g., Beijing's city_id might be '101010100').\n                      
-                                  """)
+                                        * When city information is needed, if the user provides a city name (e.g., \Beijing\), use the corresponding `city_id` (e.g., Beijing's city_id might be '101010100').\n
+                                  """
+                )
 
                 # Create and run the agent
                 logger.info("正在创建agent...")
-                agent = create_react_agent(
-                    model=model,  
-                    tools=tools,
-                    prompt=prompt
-                )
+                agent = create_react_agent(model=model, tools=tools, prompt=prompt)
                 logger.info("Agent创建成功")
 
                 # 发送查询
                 logger.info("正在发送天气查询...")
-                agent_response = await agent.ainvoke({
-                    "messages": "最近一周郑州有没有高温或大风预警？周末适合户外活动吗？"
-                })
+                agent_response = await agent.ainvoke(
+                    {"messages": "最近一周郑州有没有高温或大风预警？周末适合户外活动吗？"}
+                )
 
                 # 打印响应
                 logger.info("\nAgent Response:")
                 print(agent_response)
 
                 # 遍历消息列表并打印 ToolMessage 的 content
-                if 'messages' in agent_response:
+                if "messages" in agent_response:
                     print("\n--- Tool Message Contents ---")
-                    for message in agent_response['messages']:
-                        print(f"\nTool: {message.name}") # 可以选择打印工具名称
+                    for message in agent_response["messages"]:
+                        print(f"\nTool: {message.name}")  # 可以选择打印工具名称
                         print(f"Content:\n{message.content}")
-                        print("-" * 20) # 分隔不同 ToolMessage 的内容
+                        print("-" * 20)  # 分隔不同 ToolMessage 的内容
 
     except Exception as e:
         logger.error(f"运行过程中发生错误: {str(e)}", exc_info=True)
         # 如果是TaskGroup相关的错误，打印更详细的信息
         if "TaskGroup" in str(e) and hasattr(e, "__cause__"):
             logger.error(f"TaskGroup错误详情: {str(e.__cause__)}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
