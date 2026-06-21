@@ -20,20 +20,20 @@ MCP 是一种开放协议，允许大语言模型（如 Claude）与外部系统
 
 在 Model Context Protocol 中，stdio (Standard Input/Output，标准输入输出) 和 sse (Server-Sent Events，服务器发送事件) 是两种不同的通信模式，它们在数据如何交换和交互类型方面存在显著差异。
 
-**`stdio` (标准输入/输出) 模式：**
+** `stdio` (标准输入/输出) 模式：**
 
-* 主要用于**本地执行**，就像在命令行运行脚本一样，AI 通过标准输入给脚本指令，脚本通过标准输出直接返回结果。
-* 它适合集成**已有的本地工具**，设置简单，延迟低，安全性较高（因不暴露网络）。
+- 主要用于**本地执行**，就像在命令行运行脚本一样，AI 通过标准输入给脚本指令，脚本通过标准输出直接返回结果。
+- 它适合集成**已有的本地工具**，设置简单，延迟低，安全性较高（因不暴露网络）。
 
-**`sse` (服务器发送事件) 模式：**
+** `sse` (服务器发送事件) 模式：**
 
-* 基于 **Web 技术 (HTTP)**，AI 通过网络连接与工具服务进行交互，工具服务可以持续地将更新“推送”给 AI。
-* 它适合需要**网络访问、远程部署或多用户共享**的工具，更具可扩展性，但设置略复杂并需考虑网络安全。
+- 基于 **Web 技术 (HTTP)**，AI 通过网络连接与工具服务进行交互，工具服务可以持续地将更新“推送”给 AI。
+- 它适合需要**网络访问、远程部署或多用户共享**的工具，更具可扩展性，但设置略复杂并需考虑网络安全。
 
 **简单来说：**
 
-* 想让 AI **在本地电脑上直接运行和使用工具**，就像操作本地文件一样，用 `stdio`。
-* 想让 AI **通过网络（即使是本地网络）访问一个工具服务**，或者这个工具需要被多个应用或用户使用，用 `sse`。
+- 想让 AI **在本地电脑上直接运行和使用工具**，就像操作本地文件一样，用 `stdio`。
+- 想让 AI **通过网络（即使是本地网络）访问一个工具服务**，或者这个工具需要被多个应用或用户使用，用 `sse`。
 
 ## 项目架构
 
@@ -45,10 +45,10 @@ MCP 是一种开放协议，允许大语言模型（如 Claude）与外部系统
 
 ### 技术栈
 
-- **编程语言**：Python 3.10.12 ; Nodejs 22.14.0 ; Npm 10.9.2
+- **编程语言**：Python 3.14.4 ; UV 0.11.23 ; Nodejs 24.17.0 ; Bun 1.3.14
 - **部署环境**：Ubuntu 22.04
 - **核心依赖**：
-  - MCP SDK 1.5.0
+  - MCP[CLI] SDK 1.28.0
   - HTTPX 库（HTTP 客户端）
   - 异步编程（asyncio）
 - **调试工具**：
@@ -113,26 +113,23 @@ mcp-demo/
 要使用本项目，需要先注册和风天气开发者账号并获取 API Key：
 
 1. **注册和风天气开发者账号**：
-   - 访问 [和风天气开发服务](https://dev.qweather.com/)
-   - 点击"注册"，按照提示完成账号注册
-
+  - 访问 [和风天气开发服务](https://dev.qweather.com/)
+  - 点击"注册"，按照提示完成账号注册
 2. **创建项目并获取 API Key**：
    - 登录开发者控制台
    - 点击"项目管理" -> "创建项目"
    - 填写项目名称、创建凭据
    - 创建成功后，在项目详情页可以获取 API Key
   ![和风天气API Key](./doc/img/qweather01.png)
-
 3. **开发者的API Host**：
    - 登录开发者控制台
    - 点击"头像" -> "设置"，或直接访问https://console.qweather.com/setting?lang=zh
    - 查看API Host
-  ![和风天气API Host](./doc/img/qweather02.png) 
-
+  ![和风天气API Host](./doc/img/qweather02.png)
 4. **API 使用说明**：
-   - 免费版API有调用次数限制，详情请参考[和风天气定价页面](https://dev.qweather.com/price/)
-   - 支持通过城市ID或经纬度坐标查询天气信息
-   - 城市ID可通过[和风天气城市查询API](https://dev.qweather.com/docs/api/geoapi/)获取
+  - 免费版API有调用次数限制，详情请参考[和风天气定价页面](https://dev.qweather.com/price/)
+  - 支持通过城市ID或经纬度坐标查询天气信息
+  - 城市ID可通过[和风天气城市查询API](https://dev.qweather.com/docs/api/geoapi/)获取
 
 ### 客户端实现说明
 
@@ -143,8 +140,8 @@ mcp-demo/
 - 显示工具执行结果
 - 提供帮助信息
 
-
 ## 文档
+
 1. [MCP实战入门：让AI模型获取实时天气信息](https://mp.weixin.qq.com/s/cJhHf7caaezehEff2GSY_A)
 2. [MCP实战进阶：集成DeepSeek模型与MCP的天气信息助手](https://mp.weixin.qq.com/s/1YIYRVw8yF1zeeLtmnhtYQ)
 3. [MCP实战高阶：借助LangChain快速打造MCP天气助手](https://mp.weixin.qq.com/s/Qq3C85Bi3NHDQ9MnnBZvZQ)
@@ -153,7 +150,7 @@ mcp-demo/
 
 ### 环境要求
 
-- Python 3.10.12 或更高版本
+- Python 3.14.4 或更高版本
 - Ubuntu 22.04 操作系统
 
 ### 安装步骤
@@ -161,29 +158,27 @@ mcp-demo/
 1. **克隆项目**：
 
 ```bash
-git clone https://github.com/your-username/mcp-in-action.git
+git clone https://github.com/bobby569/mcp-in-action.git
 cd mcp-in-action/mcp-demo
 ```
 
 2. **创建并激活虚拟环境**：
 
 ```bash
-python -m venv venv_mcp_demo
-source venv_mcp_demo/bin/activate
-
-#或者使用conda创建虚拟环境
-conda create -n venv_mcp_demo python=3.10.12
-conda activate venv_mcp_demo
+uv venv
+source .venv/bin/activate
 ```
 
 3. **安装依赖**：
 
 ```bash
-pip install -r requirements.txt
+uv sync
 ```
 
 4. **设置和风天气 API Key 和 API Host**：
+
 复制`.env.example`来创建 `.env` 文件并添加以下配置：
+
 ```bash
 ### 和风天气API配置(参考https://dev.qweather.com/)
 QWEATHER_API_BASE=
@@ -196,29 +191,27 @@ QWEATHER_API_KEY=
 
 MCP Inspector 是一个可视化工具，可帮助调试和测试 MCP 服务器。要使用 MCP Inspector：
 
-1. **安装 MCP Inspector**：
+1. **本地安装 MCP Inspector**：
 
 ```bash
-npm install -g @modelcontextprotocol/inspector
+bun install
+# or
+bun add @modelcontextprotocol/inspector
 ```
 
 2. **使用 MCP Inspector 调试服务器**：
 
-推荐使用简化命令 `mcp dev`：
-
+使用 bunx：
 ```bash
+bunx @modelcontextprotocol/inspector uv run --with mcp mcp run server/weather_server.py
+# or `mcp dev`
+#  - might need to use npm to install @modelcontextprotocol/inspector
 mcp dev server/weather_server.py
-```
-
-或者使用 npx（如果未全局安装）：
-
-```bash
-npx @modelcontextprotocol/inspector python server/weather_server.py
 ```
 
 3. **在浏览器中访问 Inspector**：
 
-默认情况下，Inspector UI 运行在 http://localhost:6274，而 MCP 代理服务器运行在端口 6277。
+默认情况下，Inspector UI 运行在 [http://localhost:6274](http://localhost:6274), 而 MCP 代理服务器运行在端口 6277。
 
 4. **通过 Inspector 调试**：
    - 查看可用工具及其描述
@@ -230,38 +223,39 @@ npx @modelcontextprotocol/inspector python server/weather_server.py
 
 > **提示**：MCP Inspector 提供了更直观的界面来测试和调试 MCP 服务器，特别适合开发和调试复杂工具。
 
-
 ### 方法二：使用Python启动客户端
 
 ```bash
 python client/mcp_client.py
 ```
+
 #### 调用示例
+
 ```bash
 (venv_mcp_demo) root@fly:~/AI-Box/code/rag/mcp-in-action/mcp-demo# python client/mcp_client.py
 启动 MCP 服务器进程...
 已连接到服务器，可用工具: 2
-  - get_weather_warning: 
+  - get_weather_warning:
     获取指定位置的天气灾害预警
-    
+
     参数:
         location: 城市ID或经纬度坐标（经度,纬度）
                 例如：'101010100'（北京）或 '116.41,39.92'
-        
+
     返回:
         格式化的预警信息字符串
-    
-  - get_daily_forecast: 
+
+  - get_daily_forecast:
     获取指定位置的天气预报
-    
+
     参数:
         location: 城市ID或经纬度坐标（经度,纬度）
                 例如：'101010100'（北京）或 '116.41,39.92'
         days: 预报天数，可选值为 3、7、10、15、30，默认为 3
-        
+
     返回:
         格式化的天气预报字符串
-    
+
 
 使用 'help' 查看帮助，使用 'exit' 退出
 
@@ -281,6 +275,7 @@ python client/mcp_client.py
 ```
 
 ##### 天气预警查询
+
 ```bash
 > call get_weather_warning {"location": "101010100"}
 正在调用工具...
@@ -290,6 +285,7 @@ python client/mcp_client.py
 ```
 
 ##### 天气预报查询
+
 ```bash
 > call get_daily_forecast 101010100 7
 正在调用工具...
@@ -307,13 +303,13 @@ python client/mcp_client.py
 
 ##### 功能特点
 
-* **MCP 集成**: 与兼容 MCP 协议的服务器建立连接和通信。
-* **DeepSeek 驱动**: 使用 DeepSeek API (通过 OpenAI SDK 兼容接口) 处理自然语言查询。
-* **工具调用**: 支持根据用户意图自动调用 MCP 服务器上定义的工具（例如 `get_daily_forecast`, `get_weather_warning`）。
-* **交互式体验**: 提供一个简单的命令行界面 (CLI) 进行交互式问答。
-* **稳健性**: 包含错误处理（连接、API 调用、工具执行）和资源管理（确保连接正确关闭）。
-* **可配置**: 通过环境变量轻松配置 API 密钥、URL 和模型。
-* **可扩展**: 易于通过修改系统提示或在 MCP 服务器端添加新工具来扩展功能。
+- **MCP 集成**: 与兼容 MCP 协议的服务器建立连接和通信。
+- **DeepSeek 驱动**: 使用 DeepSeek API (通过 OpenAI SDK 兼容接口) 处理自然语言查询。
+- **工具调用**: 支持根据用户意图自动调用 MCP 服务器上定义的工具（例如 `get_daily_forecast`, `get_weather_warning`）。
+- **交互式体验**: 提供一个简单的命令行界面 (CLI) 进行交互式问答。
+- **稳健性**: 包含错误处理（连接、API 调用、工具执行）和资源管理（确保连接正确关闭）。
+- **可配置**: 通过环境变量轻松配置 API 密钥、URL 和模型。
+- **可扩展**: 易于通过修改系统提示或在 MCP 服务器端添加新工具来扩展功能。
 
 在运行客户端之前，需要配置以下环境变量。修改`mcp-demo`文件夹下名为 `.env` 的文件(如果没有，请先复制`.env.example`来创建 `.env` 文件)：
 
@@ -325,6 +321,7 @@ DEEPSEEK_MODEL=deepseek-chat                 # 使用的 DeepSeek 模型名称
 ```
 
 #### 启动客户端
+
 ```bash
 python client/mcp_client_deepseek.py
 ```
@@ -334,6 +331,7 @@ python client/mcp_client_deepseek.py
 **用户**：北京今天天气怎么样？
 
 **系统处理流程**：
+
 1. DeepSeek模型识别出这是天气查询
 2. 自动选择`get_daily_forecast`工具
 3. 确定参数：`location="101010100"`（北京城市ID）
@@ -364,7 +362,7 @@ python client/mcp_client_deepseek.py
 
 日出时间05:13，日落时间19:11。今天无降水概率，适合户外活动。
 
-请输入您的问题 (输入 'quit' 或 'exit' 退出): 
+请输入您的问题 (输入 'quit' 或 'exit' 退出):
 ```
 
 #### 复杂天气查询
@@ -379,8 +377,9 @@ python client/mcp_client_deepseek.py
 4. 综合分析两种数据，给出建议
 
 **智能助手**：
+
 ```bash
-(venv_mcp_demo) root@fly:~/AI-Box/code/rag/mcp-in-action/mcp-demo# python client/mcp_client_deepseek.py 
+(venv_mcp_demo) root@fly:~/AI-Box/code/rag/mcp-in-action/mcp-demo# python client/mcp_client_deepseek.py
 2025-05-03 15:03:51,662 - INFO - 成功连接到 MCP 服务器
 2025-05-03 15:03:51,662 - INFO - 开始聊天会话...
 
@@ -395,20 +394,20 @@ python client/mcp_client_deepseek.py
 
 助手: ### 郑州最近一周的天气情况：
 
-1. **天气预警**：  
+1. **天气预警**：
    目前郑州没有高温或大风的预警信息。
 
-2. **天气预报（5月3日至5月9日）**：  
-   - **5月3日（周六）**：多云转阴，气温14°C~25°C，东北风1-3级。  
-   - **5月4日（周日）**：多云转阴，气温18°C~28°C，南风1-3级。  
-   - **5月5日（周一）**：晴天，气温17°C~31°C，西风1-3级。  
-   - **5月6日（周二）**：多云，气温15°C~29°C，西风1-3级。  
-   - **5月7日（周三）**：晴天转阴，气温18°C~31°C，南风1-3级。  
-   - **5月8日（周四）**：阴转多云，气温18°C~28°C，南风1-3级。  
+2. **天气预报（5月3日至5月9日）**：
+   - **5月3日（周六）**：多云转阴，气温14°C~25°C，东北风1-3级。
+   - **5月4日（周日）**：多云转阴，气温18°C~28°C，南风1-3级。
+   - **5月5日（周一）**：晴天，气温17°C~31°C，西风1-3级。
+   - **5月6日（周二）**：多云，气温15°C~29°C，西风1-3级。
+   - **5月7日（周三）**：晴天转阴，气温18°C~31°C，南风1-3级。
+   - **5月8日（周四）**：阴转多云，气温18°C~28°C，南风1-3级。
    - **5月9日（周五）**：阴转多云，气温17°C~29°C，西风1-3级。
 
 ### 周末户外活动建议：
-- **周六（5月3日）**：天气多云转阴，气温适中（14°C~25°C），风力较小，适合户外活动。  
+- **周六（5月3日）**：天气多云转阴，气温适中（14°C~25°C），风力较小，适合户外活动。
 - **周日（5月4日）**：天气多云转阴，气温稍高（18°C~28°C），风力较小，也适合户外活动。
 
 **结论**：周末郑州天气较为舒适，没有极端天气预警，适合安排户外活动。建议根据个人体感选择周六或周日出行。
@@ -423,43 +422,36 @@ python client/mcp_client_deepseek.py
 LangChain版本相比原生DeepSeek版本在MCP开发中的主要优势：
 
 1. **更简洁的代理创建流程**：LangChain版本使用`create_react_agent`函数直接创建代理，简化了代码复杂度：
-   ```python
+  ```python
    agent = create_react_agent(
-       model=self.llm_client,  
+       model=self.llm_client,
        tools=tools,
        prompt=prompt
    )
-   ```
+  ```
    而DeepSeek直接实现需要手动处理整个工具调用循环。
-
 2. **自动化的工具处理**：LangChain版本使用`load_mcp_tools`函数自动适配MCP工具，省去了工具格式转换的工作：
-   ```python
-   tools = await load_mcp_tools(self.session)
-   ```
+    ```python
+    tools = await load_mcp_tools(self.session)
+    ```
    对比DeepSeek版本需要手动将MCP工具转换为OpenAI格式：
-   ```python
-   available_tools = [tool.to_openai_format() for tool in tools]
-   ```
+    ```python
+    available_tools = [tool.to_openai_format() for tool in tools]
+    ```
 
 3. **内置的ReAct推理能力**：LangChain版本利用了该框架的ReAct代理能力，可以自动执行"思考-行动-观察"循环，而无需手动管理对话历史和工具调用次数。
-
 4. **简化的消息管理**：LangChain处理模型消息和工具调用结果的逻辑更加抽象化，不需要手动构建完整的消息历史。DeepSeek版本需要手动管理消息传递和工具调用的过程。
-
 5. **扩展性更好**：LangChain提供了标准化的工具接口，可以更容易地扩展到其他模型或添加新工具，同时保持代码结构一致。
-
 6. **减少错误处理负担**：LangChain内置了更多的错误处理机制，而DeepSeek版本需要开发者手动实现各种错误处理代码。
-
 7. **更精简的执行循环**：DeepSeek版本需要手动实现多轮工具调用循环(max_tool_turns)，而LangChain版本通过代理自动处理这一过程。
-
 8. **结果展示更丰富**：LangChain版本会自动记录并可视化工具调用过程和结果，方便调试和优化：
-   ```python
-   for message in agent_response['messages']:
-       print(f"\nTool: {message.name}")
-       print(f"Content:\n{message.content}")
-   ```
+    ```python
+    for message in agent_response['messages']:
+        print(f"\nTool: {message.name}")
+        print(f"Content:\n{message.content}")
+    ```
 
 总结来说，使用LangChain框架开发MCP客户端的主要优势在于：代码更简洁、抽象层次更高、工具处理更自动化、扩展性更好，并且减少了开发者需要手动管理的复杂逻辑，特别是在多轮工具调用和消息处理方面。
-
 
 在运行客户端之前，需要配置以下环境变量。修改`mcp-demo`文件夹下名为 `.env` 的文件(如果没有，请先复制`.env.example`来创建 `.env` 文件)：
 
@@ -471,15 +463,14 @@ DEEPSEEK_MODEL=deepseek-chat                 # 使用的 DeepSeek 模型名称
 ```
 
 #### 启动客户端
+
 ```bash
 # 一次性对话
 python client/mcp_client_langchain.py
 
 # 具备聊天交互
-python client/mcp_client_langchain_chat.py  
+python client/mcp_client_langchain_chat.py
 ```
-
-
 
 #### 复杂天气查询
 
@@ -493,6 +484,7 @@ python client/mcp_client_langchain_chat.py
 4. 综合分析两种数据，给出建议
 
 **智能助手**：
+
 ```bash
 请输入您的问题 (输入 'quit' 或 'exit' 退出): 最近一周郑州有没有高温或大风预警？周末适合户外活动吗？
 2025-05-04 19:10:36,485 - INFO - 成功加载工具: ['get_weather_warning', 'get_daily_forecast']
@@ -527,7 +519,7 @@ Content:
 发布单位: 河南省气象台
 状态: update
 详细信息: 河南省气象台2025年5月4日17时00分继续发布大风蓝色预警：预计5日8时至6日8时，全省大部偏西风或西南风4到5级，阵风6到7级，其中黄河以北和三门峡、洛阳、郑州、开封西部、平顶山、许昌、漯河、周口西部部分县（市、区）阵风8到9级，局部可达10到11级，并伴有扬沙或浮尘。请注意防范。
-防御指南:    
+防御指南:
 1.政府及相关部门应按照职责做好防大风工作；
 2.森林、城区防火部门做好防火准备，机场、铁路、公路等交通管理部门应采取措施保障交通安全；
 3.停止高空、水上户外作业和游乐活动，加固或妥善安置围板、棚架广告牌、简易设施等易被大风吹动的搭建物；
@@ -677,23 +669,20 @@ MCP Inspector 是开发和调试 MCP 服务器的重要工具，提供了直观�
 ### Inspector 的主要功能
 
 1. **实时工具调用**：
-   - 通过界面直接调用 MCP 工具
-   - 可视化参数表单，避免语法错误
-   - 查看格式化的执行结果
-
+  - 通过界面直接调用 MCP 工具
+  - 可视化参数表单，避免语法错误
+  - 查看格式化的执行结果
 2. **请求历史记录**：
-   - 跟踪所有工具调用历史
-   - 复制和重放之前的请求
-   - 对比不同参数下的执行结果
-
+  - 跟踪所有工具调用历史
+  - 复制和重放之前的请求
+  - 对比不同参数下的执行结果
 3. **错误分析**：
-   - 详细的错误消息和堆栈跟踪
-   - 突出显示参数验证错误
-   - 显示请求/响应时间，帮助性能分析
-
+  - 详细的错误消息和堆栈跟踪
+  - 突出显示参数验证错误
+  - 显示请求/响应时间，帮助性能分析
 4. **流式响应可视化**：
-   - 查看支持流式传输的工具的实时输出
-   - 分析流式传输过程中的延迟
+  - 查看支持流式传输的工具的实时输出
+  - 分析流式传输过程中的延迟
 
 ### 常见调试场景
 
@@ -706,6 +695,7 @@ npx @modelcontextprotocol/inspector python server/weather_server.py
 ```
 
 在 Inspector 中：
+
 1. 选择工具（如 `get_daily_forecast`）
 2. 故意提供错误格式的参数（如字符串而非数字）
 3. 执行后，Inspector 会显示详细的验证错误
@@ -719,6 +709,7 @@ npx @modelcontextprotocol/inspector python server/weather_server.py
 ```
 
 在 Inspector 中：
+
 1. 调用 `get_weather_warning` 或 `get_daily_forecast` 工具
 2. 检查网络请求错误信息
 3. 分析响应码和错误消息
@@ -732,6 +723,7 @@ npx @modelcontextprotocol/inspector python server/weather_server.py
 ```
 
 在 Inspector 中：
+
 1. 调用目标工具多次，使用不同参数
 2. 分析每次调用的执行时间
 3. 识别性能瓶颈
@@ -739,21 +731,18 @@ npx @modelcontextprotocol/inspector python server/weather_server.py
 ### 调试最佳实践
 
 1. **先用 Inspector，再集成客户端**：
-   - 在开发新工具时，先用 Inspector 测试和完善
-   - 确保工具正常工作后再集成到客户端
-
+  - 在开发新工具时，先用 Inspector 测试和完善
+  - 确保工具正常工作后再集成到客户端
 2. **保存常用测试用例**：
-   - 使用 Inspector 的"保存请求"功能
-   - 创建不同场景的测试用例集
-
+  - 使用 Inspector 的"保存请求"功能
+  - 创建不同场景的测试用例集
 3. **使用 CLI 模式进行自动化测试**：
-   ```bash
+  ```bash
    npx @modelcontextprotocol/inspector --cli python server/weather_server.py --method tools/call --tool-name get_weather_warning --tool-arg location=101010100
-   ```
-
+  ```
 4. **对比服务器版本**：
-   - 使用相同参数测试不同版本的服务器实现
-   - 分析性能和行为差异
+  - 使用相同参数测试不同版本的服务器实现
+  - 分析性能和行为差异
 
 通过有效使用 MCP Inspector，可以显著提高开发效率，减少调试时间，并确保 MCP 服务器的稳定性和可靠性。
 
@@ -771,7 +760,7 @@ npx @modelcontextprotocol/inspector python server/weather_server.py
 
 - 提交 Issue
 - 发送 Pull Request
-- 发送邮件至：fly910905@sina.com
+- 发送邮件至：[fly910905@sina.com](mailto:fly910905@sina.com)
 
 ## 许可证
 
