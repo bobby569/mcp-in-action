@@ -13,19 +13,20 @@ MCP 服务器可以提供三种主要类型的功能：
 MCP 天气服务器
 
 提供两个工具：
-1. get_weather_warning: 获取指定城市ID或经纬度的天气灾害预警
+1. get_weather_warning: 获取指定经纬度的天气灾害预警
 2. get_daily_forecast: 获取指定城市ID或经纬度的天气预报
 
 Author: FlyAIBox
 Date: 2025.05.03
 """
 
-from typing import Any, Dict, Optional, Union
-import httpx
 import os
-from mcp.server.fastmcp import FastMCP
 from dotenv import load_dotenv
 from pathlib import Path
+from typing import Any, Dict, Optional, Union
+
+import httpx
+from mcp.server.fastmcp import FastMCP
 
 # 加载 .env 文件中的环境变量
 dotenv_path = Path(__file__).resolve().parents[1] / ".env"
@@ -44,84 +45,82 @@ async def make_qweather_request(endpoint: str, params: Dict[str, Any]) -> Option
     向和风天气 API 发送请求
 
     参数:
-        endpoint: API 端点路径（不包含基础 URL）
+        endpoint: API 端点路径(不包含基础 URL)
         params: API 请求的参数
 
     返回:
         成功时返回 JSON 响应，失败时返回 None
     """
     # 添加密钥到参数
-    params["key"] = QWEATHER_API_KEY
+    headers = {
+        "X-QW-Api-Key": QWEATHER_API_KEY,
+    }
 
     url = f"{QWEATHER_API_BASE}/{endpoint}"
 
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(url, params=params, timeout=30.0)
+            response = await client.get(url, headers=headers, params=params, timeout=30.0)
             response.raise_for_status()
             return response.json()
-        except Exception as e:
-            print(f"API 请求错误: {e}")
-            return None
+        except httpx.HTTPStatusError as http_err:
+            print(f"HTTP error occurred: {http_err}")
+        except httpx.RequestError as err:
+            print(f"An error occurred while requesting: {err}")
 
 
-def format_warning(warning: Dict[str, Any]) -> str:
+def format_alert(alert: Dict[str, Any]) -> str:
     """
     将天气预警数据格式化为可读字符串
 
     参数:
-        warning: 天气预警数据对象
+        alert: 天气预警数据对象
 
     返回:
         格式化后的预警信息
     """
     return f"""
-预警ID: {warning.get('id', '未知')}
-标题: {warning.get('title', '未知')}
-发布时间: {warning.get('pubTime', '未知')}
-开始时间: {warning.get('startTime', '未知')}
-结束时间: {warning.get('endTime', '未知')}
-预警类型: {warning.get('typeName', '未知')}
-预警等级: {warning.get('severity', '未知')} ({warning.get('severityColor', '未知')})
-发布单位: {warning.get('sender', '未知')}
-状态: {warning.get('status', '未知')}
-详细信息: {warning.get('text', '无详细信息')}
+预警ID: {alert.get('id', '未知')}
+标题: {alert.get('headline', '未知')}
+发布时间: {alert.get('issuedTime', '未知')}
+开始时间: {alert.get('onsetTime', '未知')}
+结束时间: {alert.get('expireTime', '未知')}
+预警类型: {alert.get('eventType', '未知')}
+预警等级: {alert.get('severity', '未知')} ({alert.get('color', '未知')})
+发布单位: {alert.get('senderName', '未知')}
+详细信息: {alert.get('description', '无详细信息')}
 """
 
 
 @mcp.tool()
-async def get_weather_warning(location: Union[str, int]) -> str:
+async def get_weather_warning(location: str) -> str:
     """
     获取指定位置的天气灾害预警
 
     参数:
-        location: 城市ID或经纬度坐标（经度,纬度）
-                例如：'101010100'（北京）或 '116.41,39.92'
-                也可以直接传入数字ID，如 101010100
-
+        location: 经纬度坐标（经度,纬度）
+            例如：'116.41,39.92'
     返回:
         格式化的预警信息字符串
     """
     # 确保 location 为字符串类型
     location = str(location)
+    longitude, latitude = map(float, location.split(","))
+    if not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
+        return "无效的经纬度坐标。"
 
-    params = {"location": location, "lang": "zh"}
-
-    data = await make_qweather_request("warning/now", params)
-
+    params = {"lang": "zh"}
+    endpoint = f"weatheralert/v1/current/{latitude}/{longitude}"
+    data = await make_qweather_request(endpoint, params)
     if not data:
         return "无法获取预警信息或API请求失败。"
 
-    if data.get("code") != "200":
-        return f"API 返回错误: {data.get('code')}"
-
-    warnings = data.get("warning", [])
-
-    if not warnings:
+    if data["metadata"]["zeroResult"]:
         return f"当前位置 {location} 没有活动预警。"
 
-    formatted_warnings = [format_warning(warning) for warning in warnings]
-    return "\n---\n".join(formatted_warnings)
+    alerts = data["alerts"]
+    formatted_alerts = [format_alert(alert) for alert in alerts]
+    return "\n---\n".join(formatted_alerts)
 
 
 def format_daily_forecast(daily: Dict[str, Any]) -> str:
@@ -154,10 +153,10 @@ async def get_daily_forecast(location: Union[str, int], days: int = 3) -> str:
     获取指定位置的天气预报
 
     参数:
-        location: 城市ID或经纬度坐标（经度,纬度）
+        location: 城市ID或经纬度坐标(经度,纬度)
                 例如：'101010100'（北京）或 '116.41,39.92'
-                也可以直接传入数字ID，如 101010100
-        days: 预报天数，可选值为 3、7、10、15、30，默认为 3
+                也可以直接传入数字ID,如 101010100
+        days: 预报天数，可选值为 3、7、10、15、30, 默认为 3
 
     返回:
         格式化的天气预报字符串
@@ -171,18 +170,14 @@ async def get_daily_forecast(location: Union[str, int], days: int = 3) -> str:
         days = 3  # 默认使用3天预报
 
     params = {"location": location, "lang": "zh"}
-
-    endpoint = f"weather/{days}d"
+    endpoint = f"v7/weather/{days}d"
     data = await make_qweather_request(endpoint, params)
-
     if not data:
         return "无法获取天气预报或API请求失败。"
-
     if data.get("code") != "200":
         return f"API 返回错误: {data.get('code')}"
 
     daily_forecasts = data.get("daily", [])
-
     if not daily_forecasts:
         return f"无法获取 {location} 的天气预报数据。"
 
