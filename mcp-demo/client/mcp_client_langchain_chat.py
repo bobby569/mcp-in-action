@@ -18,11 +18,11 @@ from contextlib import AsyncExitStack
 from typing import List, Optional
 
 from dotenv import load_dotenv
+from langchain.agents import create_agent
 from langchain_core.messages import SystemMessage
 from langchain_core.tools import BaseTool
 from langchain_mcp_adapters.tools import load_mcp_tools
 from langchain_openai import ChatOpenAI
-from langgraph.prebuilt import create_react_agent
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
@@ -192,21 +192,21 @@ class MCPClient:
                             Core Instructions:\n
                             1.  **Carefully analyze the user's request**: Understand all components of the user's query. Determine if the user needs weather warning information, weather forecast information, or both.\n
                             2.  **Identify Information Needs**:\n
-                                * If the user only asks for warnings (e.g., \Are there any warnings in Beijing?\), only use `get_weather_warning`.\n
-                                * If the user only asks for the forecast (e.g., \What's the weather like in Beijing tomorrow?\), only use `get_daily_forecast`.\n
-                                * **If the user's question includes multiple aspects**, such as asking about **warning status** and also asking **if it's suitable for a certain activity** (which implies a query about future weather, like \Have there been high temperature warnings in Beijing in the last week? Is it suitable for outdoor activities?\), you need to **call both tools sequentially**.\n
+                                * If the user only asks for warnings (e.g., `Are there any warnings in Beijing?`), only use `get_weather_warning`.\n
+                                * If the user only asks for the forecast (e.g., `What's the weather like in Beijing tomorrow?`), only use `get_daily_forecast`.\n
+                                * **If the user's question includes multiple aspects**, such as asking about **warning status** and also asking **if it's suitable for a certain activity** (which implies a query about future weather, like `Have there been high temperature warnings in Beijing in the last week? Is it suitable for outdoor activities?`), you need to **call both tools sequentially**.\n
                             3.  **Call Tools as Needed**:\n
                                 * **Prioritize getting warning information**: If warning information is needed, first call `get_weather_warning`.\n
-                                * **Get the weather forecast**: If the user mentions a specific time period (e.g., \weekend\, \next three days\, \next week\) or asks about activity suitability (which typically concerns the next few days), call `get_daily_forecast` to get the forecast for the corresponding period. For vague phrases like \last week\ or \recently\, interpret it as asking about *current* conditions and the *upcoming* few days (covered by the forecast). For questions like \Is it suitable for outdoor activities?\, you should get the forecast for at least the next 2-3 days (e.g., today, tomorrow, the day after tomorrow, or the upcoming weekend) to support your judgment.\n
+                                * **Get the weather forecast**: If the user mentions a specific time period (e.g., `weekend`, `next three days`, `next week`) or asks about activity suitability (which typically concerns the next few days), call `get_daily_forecast` to get the forecast for the corresponding period. For vague phrases like `last week` or `recently`, interpret it as asking about *current* conditions and the *upcoming* few days (covered by the forecast). For questions like `Is it suitable for outdoor activities?`, you should get the forecast for at least the next 2-3 days (e.g., today, tomorrow, the day after tomorrow, or the upcoming weekend) to support your judgment.\n
                                 * **Ensure tool call order**: When multiple tools need to be called, they should be called in a logical sequence. For example, first get the warning, then get the forecast. Wait for one tool to finish executing before deciding whether to call the next tool or generate a response.\n
                             4.  **Information Integration and Response**:\n
                                 * After obtaining all necessary information (warning, forecast), you **must synthesize and analyze this information**.\n
                                 * **Completely answer the user's question**: Ensure you answer all parts of the user's query.\n
-                                * **Provide advice**: If the user asks about activity suitability, based on the retrieved warning status and forecast information (temperature, weather condition - clear/rainy, wind strength, etc.), provide a clear, data-supported recommendation (e.g., \Currently there are no high temperature warnings, but it's expected to rain this weekend, so it's not very suitable for outdoor activities,\ or \It will be sunny for the next few days with no warnings, suitable for outdoor activities.\).\n
+                                * **Provide advice**: If the user asks about activity suitability, based on the retrieved warning status and forecast information (temperature, weather condition - clear/rainy, wind strength, etc.), provide a clear, data-supported recommendation (e.g., `Currently there are no high temperature warnings, but it's expected to rain this weekend, so it's not very suitable for outdoor activities,` or `It will be sunny for the next few days with no warnings, suitable for outdoor activities.`).\n
                             5.  **Tool Usage Details**:\n
                                 * When using the tools, retain the full context of the user's original question.\n
-                                * Unless explicitly requested by the user, do not insert specific times of day (e.g., \3 PM\) into the search query or your response.\n
-                                * When city information is needed, if the user provides a city name (e.g., \Beijing\), use the corresponding `city_id` (e.g., Beijing's city_id might be '101010100').\n
+                                * Unless explicitly requested by the user, do not insert specific times of day (e.g., `3 PM`) into the search query or your response.\n
+                                * When city information is needed, if the user provides a city name (e.g., `Beijing`), use the corresponding `city_id` (e.g., Beijing's city_id might be '101010100').\n
                             """
         )
 
@@ -214,13 +214,13 @@ class MCPClient:
         tools = await self.server.list_tools()
 
         ## 更简洁的代理创建流程：
-        # LangChain版本使用create_react_agent函数
+        # LangChain版本使用create_agent函数
         # 直接创建代理，并指定模型、工具和提示
         # 简化了代码复杂度
 
         # LangChain方式创建和运行agent
         logger.info("正在创建agent...")
-        agent = create_react_agent(model=self.llm_client, tools=tools, prompt=prompt)
+        agent = create_agent(model=self.llm_client, tools=tools, system_prompt=prompt)
         logger.info("Agent创建成功")
 
         # 发送查询
