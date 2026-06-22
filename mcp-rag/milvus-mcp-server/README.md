@@ -16,30 +16,32 @@
 ## 部署方式
 
 1. 首先启动 Milvus 及其依赖服务：
+
 ```bash
 docker compose up -d etcd minio standalone
 ```
 
-1. 创建 Python 虚拟环境：
+2. 创建 Python 虚拟环境：
+
 ```bash
 # 在mcp-rag目录创建
 cd ..
-python -m venv venv_mcp_rag
-source venv_mcp_rag/bin/activate  
-
-#或者使用conda创建虚拟环境
-conda create -n venv_mcp_rag python=3.10.12
-conda activate venv_mcp_rag
+uv venv
+source .venv/bin/activate
 ```
 
 3. 安装依赖：
+
 ```bash
-pip install torch==2.7.0 --index-url https://download.pytorch.org/whl/cpu
-pip install -r requirements.txt
+uv add torch==2.12.1 --default-index https://download.pytorch.org/whl/cpu
+cd milvus-mcp-server
+uv sync
 ```
 
 4. 配置环境变量：
+
 复制`.env.example`来创建 `.env` 文件并添加以下配置：
+
 ```
 MILVUS_HOST=localhost
 MILVUS_PORT=19530
@@ -50,11 +52,14 @@ VECTOR_DIMENSION=384
 ```
 
 5. 启动服务器：
+
 ```bash
 export HF_ENDPOINT=https://hf-mirror.com
-python -m app.main
+uv run -m app.main
 ```
+
 启动成功信息
+
 ```bash
 (venv_mcp_rag) root@fly:~/AI-Box/code/rag/flyaibox-mcp-rag/milvus-mcp-server# python -m app.main
 2025-04-26 23:14:00 | INFO     | __main__:<module>:18 - Starting Milvus MCP Server on port 8080
@@ -66,8 +71,10 @@ INFO:     192.168.172.1:13398 - "GET /docs HTTP/1.1" 404 Not Found
 INFO:     192.168.172.1:13398 - "GET / HTTP/1.1" 404 Not Found
 INFO:     192.168.172.1:13398 - "GET /sse HTTP/1.1" 200 OK
 ```
+
 6. 验证服务器是否启动成功：
-http://localhost:8080/sse
+
+[http://localhost:8080/sse](http://localhost:8080/sse)
 
 ```bash
 event: endpoint
@@ -83,12 +90,15 @@ data: /messages/?session_id=fef8120bae4d49508a96fa546e613329
 
 7. 本地调试: sse 模式
 
-首先启动服务器`python -m app.main`，然后运行可视化调试界面 MCP Inspector, 根据 Terminal的日志提示打开"http://localhost:5173"进行调试。
+首先启动服务器`python -m app.main`，然后运行可视化调试界面 MCP Inspector, 根据 Terminal的日志提示打开"[http://localhost:5173"进行调试。](http://localhost:5173"进行调试。)
+
 ```bash
   # 启动 MCP Inspector
   npx @modelcontextprotocol/inspector node build/index.js
 ```
+
 启动效果
+
 ```bash
 (venv_mcp_rag) root@fly:~/AI-Box/code/rag/mcp-in-action/mcp-rag/milvus-mcp-server# npx @modelcontextprotocol/inspector node build/index.js
 Starting MCP inspector...
@@ -97,12 +107,14 @@ Starting MCP inspector...
 ```
 
 8. 工具测试
+
 参考：MCP-Tools-测试文档.md，如下：
-![流程图](../doc/img/milvus-mcp-server-01.png)
+流程图
 
 ## 系统资源配置说明
 
 当前配置针对中小规模应用优化，各服务的资源限制如下：
+
 - etcd: 0.5 CPU, 512MB 内存
 - MinIO: 0.5 CPU, 512MB 内存
 - Milvus: 0.5 CPU, 512MB 内存
@@ -133,4 +145,6 @@ Starting MCP inspector...
 该服务器与任何 MCP 客户端兼容。要使用它，请将您的 MCP 客户端指向服务器 URL。
 
 ## 参考文档
-1. milvus 可视化客户端--Attu桌面快速入门：https://milvus.io/docs/zh/quickstart_with_attu.md
+
+1. milvus 可视化客户端--Attu桌面快速入门：[https://milvus.io/docs/zh/quickstart_with_attu.md](https://milvus.io/docs/zh/quickstart_with_attu.md)
+

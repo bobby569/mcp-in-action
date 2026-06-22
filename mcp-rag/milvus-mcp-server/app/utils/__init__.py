@@ -1,1 +1,1 @@
-"""Utility functions for the MCP server.""" 
+"""Utility functions for the MCP server."""

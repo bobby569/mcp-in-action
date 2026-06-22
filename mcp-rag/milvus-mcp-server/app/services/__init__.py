@@ -1,1 +1,1 @@
-"""Service layer for the MCP server.""" 
+"""Service layer for the MCP server."""

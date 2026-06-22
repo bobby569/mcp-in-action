@@ -9,6 +9,7 @@ Milvus MCP 客户端配置文件
 4. 知识库分块和检索参数配置
 5. MCP工具定义
 """
+
 import os
 import sys
 from dotenv import load_dotenv
@@ -31,7 +32,7 @@ logger.remove()
 logger.add(
     sink=sys.stdout,
     level=LOG_LEVEL,
-    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>"
+    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
 )
 
 # 知识库配置参数
@@ -44,5 +45,5 @@ TOOLS = {
     "storeKnowledge": "将文档存储到知识库中以便日后检索",
     "searchKnowledge": "在知识库中搜索相似文档",
     "storeFAQ": "将文档存储到常见问题解答库中以便日后检索",
-    "searchFAQ": "在常见问题解答库中搜索相似文档"
-} 
+    "searchFAQ": "在常见问题解答库中搜索相似文档",
+}

@@ -9,7 +9,6 @@ implementing singleton pattern and dependency management.
 """
 
 from functools import lru_cache
-from typing import Generator
 
 from app.services.embedding_service import EmbeddingService
 from app.services.milvus_service import MilvusService
@@ -18,9 +17,9 @@ from app.services.milvus_service import MilvusService
 @lru_cache(maxsize=1)
 def get_embedding_service() -> EmbeddingService:
     """获取向量嵌入服务的单例实例。
-    
+
     使用lru_cache装饰器确保只创建一个EmbeddingService实例，实现单例模式。
-    
+
     Returns:
         EmbeddingService: 向量嵌入服务实例
     """
@@ -30,10 +29,10 @@ def get_embedding_service() -> EmbeddingService:
 @lru_cache(maxsize=1)
 def get_milvus_service() -> MilvusService:
     """获取Milvus向量数据库服务的单例实例。
-    
+
     使用lru_cache装饰器确保只创建一个MilvusService实例，实现单例模式。
     该服务依赖于EmbeddingService，通过get_embedding_service()获取依赖。
-    
+
     Returns:
         MilvusService: Milvus向量数据库服务实例
     """
@@ -43,11 +42,11 @@ def get_milvus_service() -> MilvusService:
 
 def get_milvus_service_dependency() -> MilvusService:
     """Milvus服务的依赖获取函数。
-    
+
     返回MilvusService实例，而不是使用生成器函数。
     这样可以避免在初始化过程中出现的问题，确保服务实例在使用前完全初始化。
-    
+
     Returns:
         MilvusService: Milvus向量数据库服务实例
     """
-    return get_milvus_service() 
+    return get_milvus_service()

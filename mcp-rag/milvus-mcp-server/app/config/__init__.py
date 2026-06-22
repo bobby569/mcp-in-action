@@ -1,1 +1,1 @@
-"""Configuration module for the MCP server.""" 
+"""Configuration module for the MCP server."""

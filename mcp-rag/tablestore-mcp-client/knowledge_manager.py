@@ -1,19 +1,21 @@
+import asyncio
 import json
+import sys
+from contextlib import AsyncExitStack
+from typing import Any, List
+
 from mcp import ClientSession
 from mcp.client.sse import sse_client
-from typing import Any, List
-from contextlib import AsyncExitStack
-import asyncio
 
 import client_chunk as chunk
 from client_config import *
-import sys
+
 
 class MCPClient:
     """
     A client class for interacting with the MCP (Model Control Protocol) server.
     This class manages the connection and communication with the SQLite database through MCP.
-    
+
     MCP客户端类，用于与MCP(模型控制协议)服务器交互。
     该类管理与SQLite数据库通过MCP的连接和通信。
     """
@@ -21,7 +23,7 @@ class MCPClient:
     def __init__(self, host: str):
         """
         Initialize the MCP client with server parameters
-        
+
         使用服务器参数初始化MCP客户端
         """
         self.host = host  # MCP服务器主机地址
@@ -32,7 +34,7 @@ class MCPClient:
     async def __aenter__(self):
         """
         Async context manager entry
-        
+
         异步上下文管理器入口，进入时自动连接服务器
         """
         await self.connect()
@@ -41,7 +43,7 @@ class MCPClient:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """
         Async context manager exit
-        
+
         异步上下文管理器出口，退出时自动关闭连接
         """
         if self.session:
@@ -52,24 +54,30 @@ class MCPClient:
     async def connect(self):
         """
         Establishes connection to MCP server with retry mechanism
-        
+
         建立与MCP服务器的连接，包含重试机制
         """
         max_retries = 5
         retry_delay = 2  # seconds
-        
+
         for attempt in range(max_retries):
             try:
-                self._client = sse_client(self.host, timeout=10)  # 创建SSE客户端，设置超时时间为10秒
+                self._client = sse_client(
+                    self.host, timeout=10
+                )  # 创建SSE客户端，设置超时时间为10秒
                 # 使用异步上下文管理器栈(exit_stack)进入SSE客户端的异步上下文
-                stdio_transport = await self.exit_stack.enter_async_context(self._client)  # 进入异步上下文并获取传输对象
+                stdio_transport = await self.exit_stack.enter_async_context(
+                    self._client
+                )  # 进入异步上下文并获取传输对象
                 read, write = stdio_transport  # 解包获取读写通道
-                
+
                 # Add a short delay to ensure server initialization is complete
                 await asyncio.sleep(1)
-                
-                self.session = await self.exit_stack.enter_async_context(ClientSession(read, write))  # 创建并进入客户端会话
-                
+
+                self.session = await self.exit_stack.enter_async_context(
+                    ClientSession(read, write)
+                )  # 创建并进入客户端会话
+
                 # Test the connection by listing tools
                 await self.get_available_tools()
                 print(f"Successfully connected to MCP server on attempt {attempt + 1}")
@@ -86,7 +94,7 @@ class MCPClient:
     async def get_available_tools(self) -> List[Any]:
         """
         Retrieve a list of available tools from the MCP server.
-        
+
         从MCP服务器获取可用工具列表
         """
         if not self.session:
@@ -105,7 +113,7 @@ class MCPClient:
 
         Returns:
             A callable async function that executes the specified tool
-            
+
         创建特定工具的可调用函数。
         这允许我们通过MCP服务器执行数据库操作。
 
@@ -134,7 +142,7 @@ async def agent_loop(mcp_client, query: str, tools, messages: List[dict] = None)
         query: User's input question or command
         tools: Dictionary of available database tools and their schemas
         messages: List of messages to pass to the LLM, defaults to None
-        
+
     主要交互循环，使用LLM和可用工具处理用户查询。
 
     此函数:
@@ -148,28 +156,24 @@ async def agent_loop(mcp_client, query: str, tools, messages: List[dict] = None)
         messages: 传递给LLM的消息列表，默认为None
     """
     # 将工具列表转换为LLM可用的格式
-    available_tools = [{
-        "type": "function",
-        "function": {
-            "name": tool.name,
-            "description": tool.description,
-            "parameters": tool.inputSchema
+    available_tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": tool.name,
+                "description": tool.description,
+                "parameters": tool.inputSchema,
+            },
         }
-    } for tool in tools]
+        for tool in tools
+    ]
 
     # 创建消息列表，包含用户查询
-    messages = [
-        {
-            "role": "user",
-            "content": query
-        }
-    ]
+    messages = [{"role": "user", "content": query}]
 
     # 使用系统提示、用户查询和可用工具查询LLM
     response = await llm_client.chat.completions.create(
-        model=LLM_MODEL,
-        messages=messages,
-        tools=available_tools
+        model=LLM_MODEL, messages=messages, tools=available_tools
     )
 
     final_text = []  # 用于存储最终文本响应
@@ -184,35 +188,39 @@ async def agent_loop(mcp_client, query: str, tools, messages: List[dict] = None)
 
             # 调用指定工具并获取结果
             result = await mcp_client.call_tool(tool_name, tool_args)
-            final_text.append(f"[Calling tool {tool_name} with args {tool_args}]")  # 记录工具调用信息
+            final_text.append(
+                f"[Calling tool {tool_name} with args {tool_args}]"
+            )  # 记录工具调用信息
 
             # 将工具调用添加到消息历史中
-            messages.append({
-                "role": "assistant",
-                "tool_calls": [
-                    {
-                        "id": tool_call.id,
-                        "type": "function",
-                        "function": {
-                            "name": tool_name,
-                            "arguments": json.dumps(tool_args)
+            messages.append(
+                {
+                    "role": "assistant",
+                    "tool_calls": [
+                        {
+                            "id": tool_call.id,
+                            "type": "function",
+                            "function": {
+                                "name": tool_name,
+                                "arguments": json.dumps(tool_args),
+                            },
                         }
-                    }
-                ]
-            })
+                    ],
+                }
+            )
 
             # 将工具调用结果添加到消息历史中
-            messages.append({
-                "role": "tool",
-                "tool_call_id": tool_call.id,
-                "content": str(result.content)
-            })
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": str(result.content),
+                }
+            )
 
         # 再次查询LLM，包含工具调用结果
         response = await llm_client.chat.completions.create(
-            model=LLM_MODEL,
-            messages=messages,
-            tools=available_tools
+            model=LLM_MODEL, messages=messages, tools=available_tools
         )
 
         message = response.choices[0].message  # 获取LLM的新响应
@@ -225,13 +233,13 @@ async def agent_loop(mcp_client, query: str, tools, messages: List[dict] = None)
 async def import_knowledge(path):
     """
     导入知识库文件，将文本内容分块并存储到数据库中
-    
+
     参数:
         path: 知识库文件路径
     """
     # 读取知识文本内容
     try:
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, "r", encoding="utf-8") as f:
             knowledge_text = f.read()
     except Exception as e:
         print(f"Error reading file {path}: {e}")
@@ -239,10 +247,10 @@ async def import_knowledge(path):
 
     # 将文本切分成每块不超过2000字符的块
     chunks = chunk.to_chunks(knowledge_text, 2000)
-    
+
     # 创建并连接MCP客户端
     print(f"Connecting to MCP server at {MCP_SERVER_HOST}")
-    
+
     try:
         async with MCPClient(MCP_SERVER_HOST) as mcp_client:
             # 尝试访问服务器，确保连接正常
@@ -255,11 +263,11 @@ async def import_knowledge(path):
                 print(f"Error communicating with MCP server: {e}")
                 return
 
-            print('Total Chunks: %d' % len(chunks))  # 打印块总数
+            print("Total Chunks: %d" % len(chunks))  # 打印块总数
             i = 0
             # 处理每一个文本块
             for c in chunks:
-                print('Processing chunk %d.' % i)  # 打印当前处理的块序号
+                print("Processing chunk %d." % i)  # 打印当前处理的块序号
                 i = i + 1
                 try:
                     # 根据模板构建分析内容的提示
@@ -275,7 +283,7 @@ async def import_knowledge(path):
                         continue
 
                     # 处理解析出的文本块，存储到知识库
-                    for kc in j.get('Chunks', []):
+                    for kc in j.get("Chunks", []):
                         try:
                             # 根据模板构建存储知识的提示
                             q = store_knowledge_prompt_template % kc
@@ -286,9 +294,12 @@ async def import_knowledge(path):
                             print(f"Error storing chunk: {e}")
 
                     # 处理解析出的FAQ对，存储到FAQ库
-                    for faq in j.get('FAQs', []):
+                    for faq in j.get("FAQs", []):
                         try:
-                            q = store_faq_prompt_template % (faq.get('Question', ''), faq.get('Answer', ''))
+                            q = store_faq_prompt_template % (
+                                faq.get("Question", ""),
+                                faq.get("Answer", ""),
+                            )
                             response = await agent_loop(mcp_client, q, tools)
                             print(response)
                         except Exception as e:
@@ -298,10 +309,11 @@ async def import_knowledge(path):
     except Exception as e:
         print(f"Connection error: {e}")
 
+
 async def search_knowledge(query):
     """
     搜索知识库中的内容
-    
+
     参数:
         query: 搜索查询
     """
@@ -315,10 +327,11 @@ async def search_knowledge(query):
         response = await agent_loop(mcp_client, query, tools)
         print(response)  # 打印搜索结果
 
+
 async def chat(query):
     """
     基于知识库的智能问答
-    
+
     参数:
         query: 用户问题
     """
@@ -331,6 +344,7 @@ async def chat(query):
         # 调用agent_loop处理聊天任务
         response = await agent_loop(mcp_client, query, tools)
         print(response)  # 打印聊天响应
+
 
 async def main():
     """
@@ -345,16 +359,17 @@ async def main():
     args = sys.argv[2]  # 获取命令参数
 
     # 根据命令执行相应操作
-    if command == 'import':
+    if command == "import":
         await import_knowledge(args)  # 导入知识
-    elif command == 'search':
+    elif command == "search":
         await search_knowledge(args)  # 搜索知识
-    elif command == 'chat':
+    elif command == "chat":
         await chat(args)  # 基于知识库聊天
     else:
         # 命令无效，打印使用说明
         print("Usage: python knowledge_manager.py import/search/chat <args>")
         return
+
 
 if __name__ == "__main__":
     # 运行主函数

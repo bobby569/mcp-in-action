@@ -1,1 +1,1 @@
-"""Data models for the MCP server.""" 
+"""Data models for the MCP server."""

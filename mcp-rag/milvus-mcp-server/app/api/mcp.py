@@ -3,12 +3,12 @@ from typing import List
 from pydantic import json_schema
 
 from app.models.models import (
-    KnowledgeContent, 
-    SearchKnowledgeQuery, 
-    FAQContent, 
+    KnowledgeContent,
+    SearchKnowledgeQuery,
+    FAQContent,
     SearchFAQQuery,
     MCPTools,
-    MCPTool
+    MCPTool,
 )
 from app.services.milvus_service import MilvusService
 from app.dependencies import get_milvus_service_dependency
@@ -19,12 +19,12 @@ router = APIRouter(prefix="/api/v1")
 
 def get_tools() -> MCPTools:
     """Get the available MCP tools.
-    
+
     Returns:
         The tools response object
-        
+
     获取可用的MCP工具。
-    
+
     返回:
         工具响应对象
     """
@@ -32,23 +32,23 @@ def get_tools() -> MCPTools:
         MCPTool(
             name="storeKnowledge",
             description="Store document into knowledge store for later retrieval.",
-            input_schema=json_schema.model_json_schema(KnowledgeContent)
+            input_schema=json_schema.model_json_schema(KnowledgeContent),
         ),
         MCPTool(
             name="searchKnowledge",
             description="Search for similar documents on natural language descriptions from knowledge store.",
-            input_schema=json_schema.model_json_schema(SearchKnowledgeQuery)
+            input_schema=json_schema.model_json_schema(SearchKnowledgeQuery),
         ),
         MCPTool(
             name="storeFAQ",
             description="Store document into FAQ store for later retrieval.",
-            input_schema=json_schema.model_json_schema(FAQContent)
+            input_schema=json_schema.model_json_schema(FAQContent),
         ),
         MCPTool(
             name="searchFAQ",
             description="Search for similar documents on natural language descriptions from FAQ store.",
-            input_schema=json_schema.model_json_schema(SearchFAQQuery)
-        )
+            input_schema=json_schema.model_json_schema(SearchFAQQuery),
+        ),
     ]
     return MCPTools(tools=tools)
 
@@ -56,12 +56,12 @@ def get_tools() -> MCPTools:
 @router.get("/tools")
 async def tools() -> MCPTools:
     """Get the available MCP tools.
-    
+
     Returns:
         The tools response
-        
+
     获取可用的MCP工具。
-    
+
     返回:
         工具响应
     """
@@ -71,16 +71,16 @@ async def tools() -> MCPTools:
 @router.post("/storeKnowledge", status_code=201)
 async def store_knowledge(
     content: KnowledgeContent,
-    milvus_service: MilvusService = Depends(get_milvus_service_dependency)
+    milvus_service: MilvusService = Depends(get_milvus_service_dependency),
 ) -> None:
     """Store a document in the knowledge store.
-    
+
     Args:
         content: The knowledge content to store
         milvus_service: The Milvus service
-        
+
     在知识库中存储文档。
-    
+
     参数:
         content: 要存储的知识内容
         milvus_service: Milvus服务对象
@@ -91,23 +91,23 @@ async def store_knowledge(
 @router.post("/searchKnowledge")
 async def search_knowledge(
     query: SearchKnowledgeQuery,
-    milvus_service: MilvusService = Depends(get_milvus_service_dependency)
+    milvus_service: MilvusService = Depends(get_milvus_service_dependency),
 ) -> List[KnowledgeContent]:
     """Search for documents in the knowledge store.
-    
+
     Args:
         query: The search query
         milvus_service: The Milvus service
-        
+
     Returns:
         List of matching documents
-        
+
     在知识库中搜索文档。
-    
+
     参数:
         query: 搜索查询
         milvus_service: Milvus服务对象
-        
+
     返回:
         匹配文档的列表
     """
@@ -117,16 +117,16 @@ async def search_knowledge(
 @router.post("/storeFAQ", status_code=201)
 async def store_faq(
     content: FAQContent,
-    milvus_service: MilvusService = Depends(get_milvus_service_dependency)
+    milvus_service: MilvusService = Depends(get_milvus_service_dependency),
 ) -> None:
     """Store an FAQ in the FAQ store.
-    
+
     Args:
         content: The FAQ content to store
         milvus_service: The Milvus service
-        
+
     在FAQ库中存储常见问题。
-    
+
     参数:
         content: 要存储的FAQ内容
         milvus_service: Milvus服务对象
@@ -137,24 +137,24 @@ async def store_faq(
 @router.post("/searchFAQ")
 async def search_faq(
     query: SearchFAQQuery,
-    milvus_service: MilvusService = Depends(get_milvus_service_dependency)
+    milvus_service: MilvusService = Depends(get_milvus_service_dependency),
 ) -> List[FAQContent]:
     """Search for FAQs in the FAQ store.
-    
+
     Args:
         query: The search query
         milvus_service: The Milvus service
-        
+
     Returns:
         List of matching FAQs
-        
+
     在FAQ库中搜索常见问题。
-    
+
     参数:
         query: 搜索查询
         milvus_service: Milvus服务对象
-        
+
     返回:
         匹配FAQ的列表
     """
-    return milvus_service.search_faq(query.query, query.size) 
+    return milvus_service.search_faq(query.query, query.size)

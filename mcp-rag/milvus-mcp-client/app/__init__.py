@@ -5,4 +5,4 @@ Milvus MCP 客户端 - 与 Milvus MCP 服务器交互的客户端
 主要功能包括文本处理、知识库构建、FAQ提取和基于RAG技术的问答。
 """
 
-__version__ = "0.1.0" 
+__version__ = "0.1.0"

@@ -1,12 +1,11 @@
-FROM python:3.9-slim
+FROM python:3.14-slim
 
 WORKDIR /app
 
 # Install system dependencies and clean up in one layer
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends build-essential && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 COPY requirements.txt .
@@ -32,4 +31,4 @@ USER appuser
 EXPOSE 8080
 
 # Run the application with optimized settings
-CMD ["python", "-m", "app.main"] 
+CMD ["python", "-m", "app.main"]

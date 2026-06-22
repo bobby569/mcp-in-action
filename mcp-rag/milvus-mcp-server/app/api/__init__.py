@@ -1,1 +1,1 @@
-"""API module for MCP endpoints.""" 
+"""API module for MCP endpoints."""
