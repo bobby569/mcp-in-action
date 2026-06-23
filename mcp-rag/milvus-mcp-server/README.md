@@ -54,22 +54,27 @@ VECTOR_DIMENSION=384
 5. 启动服务器：
 
 ```bash
+# set HF_ENDPOINT only if in mainland China
 export HF_ENDPOINT=https://hf-mirror.com
+# this might take a few seconds
 uv run -m app.main
 ```
 
 启动成功信息
 
 ```bash
-(venv_mcp_rag) root@fly:~/AI-Box/code/rag/flyaibox-mcp-rag/milvus-mcp-server# python -m app.main
-2025-04-26 23:14:00 | INFO     | __main__:<module>:18 - Starting Milvus MCP Server on port 8080
-INFO:     Started server process [13541]
+➜  milvus-mcp-server git:(main) ✗ uv run -m app.main
+2026-06-22 23:48:16 | INFO     | app.services.embedding_service:__init__:12 - Loading embedding model: all-MiniLM-L6-v2
+...
+2026-06-22 23:48:20 | INFO     | __main__:initialize_server:35 - MCP server initialization complete
+2026-06-22 23:48:20 | INFO     | __main__:start_server:65 - Starting Milvus MCP Server on 0.0.0.0:8080
+2026-06-22 23:48:20 | INFO     | app.mcp_server:run:53 - MCP Server startup event
+2026-06-22 23:48:20 | INFO     | app.mcp_server:run:56 - MCP Server is ready for connections
+INFO:     Started server process [63277]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
-INFO:     192.168.172.1:13398 - "GET /docs HTTP/1.1" 404 Not Found
-INFO:     192.168.172.1:13398 - "GET / HTTP/1.1" 404 Not Found
-INFO:     192.168.172.1:13398 - "GET /sse HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54127 - "GET /sse HTTP/1.1" 200 OK
 ```
 
 6. 验证服务器是否启动成功：
@@ -78,32 +83,27 @@ INFO:     192.168.172.1:13398 - "GET /sse HTTP/1.1" 200 OK
 
 ```bash
 event: endpoint
-data: /messages/?session_id=fef8120bae4d49508a96fa546e613329
-: ping - 2025-04-26 15:14:49.974582+00:00
-: ping - 2025-04-26 15:15:04.977367+00:00
-: ping - 2025-04-26 15:15:19.979094+00:00
-: ping - 2025-04-26 15:15:34.983508+00:00
-: ping - 2025-04-26 15:15:49.985639+00:00
-: ping - 2025-04-26 15:16:04.989747+00:00
-
+data: /messages/?session_id=84a3044d4ef54df89da614d06cd5e1f9
+: ping - 2026-06-23 06:57:32.054887+00:00
+: ping - 2026-06-23 06:57:47.057249+00:00
 ```
 
 7. 本地调试: sse 模式
 
-首先启动服务器`python -m app.main`，然后运行可视化调试界面 MCP Inspector, 根据 Terminal的日志提示打开"[http://localhost:5173"进行调试。](http://localhost:5173"进行调试。)
+首先启动服务器`python -m app.main`，然后运行可视化调试界面 MCP Inspector, 根据 Terminal的日志提示打开"[http://localhost:5173](http://localhost:5173)"进行调试。
 
 ```bash
   # 启动 MCP Inspector
-  npx @modelcontextprotocol/inspector node build/index.js
+  bunx @modelcontextprotocol/inspector node build/index.js
 ```
 
 启动效果
 
 ```bash
-(venv_mcp_rag) root@fly:~/AI-Box/code/rag/mcp-in-action/mcp-rag/milvus-mcp-server# npx @modelcontextprotocol/inspector node build/index.js
+➜  milvus-mcp-server git:(main) ✗ bunx @modelcontextprotocol/inspector node build/index.js
 Starting MCP inspector...
-⚙️ Proxy server listening on port 6277
-🔍 MCP Inspector is up and running at http://127.0.0.1:6274 🚀
+⚙️ Proxy server listening on localhost:6277
+🚀 MCP Inspector is up and running at: http://localhost:6274/?MCP_PROXY_AUTH_TOKEN=...
 ```
 
 8. 工具测试

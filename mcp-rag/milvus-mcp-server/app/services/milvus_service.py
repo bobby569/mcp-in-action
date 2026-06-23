@@ -3,12 +3,11 @@ import json
 from typing import List
 
 from pymilvus import (
-    connections,
-    utility,
     Collection,
-    FieldSchema,
     CollectionSchema,
     DataType,
+    FieldSchema,
+    MilvusClient,
 )
 from loguru import logger
 
@@ -41,7 +40,7 @@ class MilvusService:
 
         # Connect to Milvus
         logger.info(f"Connecting to Milvus at {MILVUS_HOST}:{MILVUS_PORT}")
-        connections.connect(alias="default", host=MILVUS_HOST, port=MILVUS_PORT)
+        self.client = MilvusClient(uri=f"http://{MILVUS_HOST}:{MILVUS_PORT}")
 
         # Initialize collections
         self._init_knowledge_collection()
@@ -49,7 +48,7 @@ class MilvusService:
 
     def _init_knowledge_collection(self):
         """Initialize the knowledge collection."""
-        if utility.has_collection(KNOWLEDGE_COLLECTION):
+        if self.client.has_collection(collection_name=KNOWLEDGE_COLLECTION):
             logger.info(f"Collection {KNOWLEDGE_COLLECTION} already exists")
         else:
             logger.info(f"Creating collection {KNOWLEDGE_COLLECTION}")
@@ -73,7 +72,7 @@ class MilvusService:
 
     def _init_faq_collection(self):
         """Initialize the FAQ collection."""
-        if utility.has_collection(FAQ_COLLECTION):
+        if self.client.has_collection(collection_name=FAQ_COLLECTION):
             logger.info(f"Collection {FAQ_COLLECTION} already exists")
         else:
             logger.info(f"Creating collection {FAQ_COLLECTION}")
@@ -217,5 +216,5 @@ class MilvusService:
 
     def close(self):
         """Close the connection to Milvus."""
-        connections.disconnect("default")
+        self.client.close()
         logger.info("Disconnected from Milvus")

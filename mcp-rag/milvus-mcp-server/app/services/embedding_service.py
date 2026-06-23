@@ -1,8 +1,7 @@
 import numpy as np
-from sentence_transformers import SentenceTransformer
-from loguru import logger
-
 from app.config.settings import EMBEDDING_MODEL, VECTOR_DIMENSION
+from loguru import logger
+from sentence_transformers import SentenceTransformer
 
 
 class EmbeddingService:
@@ -15,7 +14,7 @@ class EmbeddingService:
         self.dimension = VECTOR_DIMENSION
 
         # Verify that the model dimension matches the configured dimension
-        model_dimension = self.model.get_sentence_embedding_dimension()
+        model_dimension = self.model.get_embedding_dimension()
         if model_dimension != self.dimension:
             logger.warning(
                 f"Configured dimension ({self.dimension}) does not match model dimension ({model_dimension})"
